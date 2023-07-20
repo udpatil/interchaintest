@@ -1,0 +1,33 @@
+{
+  "Relayers": ["hermes"],
+
+  "ChainSets": [
+    [
+      {
+        "Name": "gaia",
+        "Version": "latest"
+      },
+      {
+        "NumValidators": 2,
+        "NumFullNodes": 1,
+
+        "Type": "sei",
+        "Name": "sei",
+        "ChainID": "sei-69",
+        "Images": [
+          {
+            "Repository": "ghcr.io/strangelove-ventures/heighliner/sei",
+            "Version": "latest",
+            "UidGid": "1025:1025"
+          }
+        ],
+        "Bin": "seid",
+        "Bech32Prefix": "sei",
+        "Denom": "usei",
+        "GasPrices": "0.1usei",
+        "GasAdjustment": 1.3,
+        "TrustingPeriod": "168h"
+      }
+    ]
+  ]
+}

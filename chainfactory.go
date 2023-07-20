@@ -10,6 +10,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/penumbra"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/polkadot"
+	"github.com/strangelove-ventures/interchaintest/v7/chain/sei"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
@@ -131,6 +132,8 @@ func buildChain(log *zap.Logger, testName string, cfg ibc.ChainConfig, numValida
 	switch cfg.Type {
 	case "cosmos":
 		return cosmos.NewCosmosChain(testName, cfg, nv, nf, log), nil
+	case "sei":
+		return sei.NewSeiChain(testName, cfg, nv, nf, log), nil
 	case "penumbra":
 		return penumbra.NewPenumbraChain(log, testName, cfg, nv, nf), nil
 	case "polkadot":
