@@ -109,7 +109,6 @@ func StopStartRelayerWithPreStartFuncs(
 		return nil, fmt.Errorf("channel count invalid. expected: > 0, actual: %d", len(channels))
 	}
 
-	fmt.Println("starting waitgroups")
 	wg := sync.WaitGroup{}
 	for i, preRelayerStart := range preRelayerStartFuncs {
 		if preRelayerStart == nil {
@@ -118,14 +117,11 @@ func StopStartRelayerWithPreStartFuncs(
 		preRelayerStart := preRelayerStart
 		wg.Add(1)
 		go func(j int) {
-			fmt.Println("starting pre-relayer start", j)
 			preRelayerStart(channels)
 			wg.Done()
-			fmt.Println("done pre-relayer start", j)
 		}(i)
 	}
 	wg.Wait()
-	fmt.Println("done with waitgroups")
 
 	if len(pathNames) == 0 {
 		if err := relayerImpl.StartRelayer(ctx, eRep, testPathName); err != nil {
@@ -136,7 +132,6 @@ func StopStartRelayerWithPreStartFuncs(
 			return nil, fmt.Errorf("failed to start relayer: %w", err)
 		}
 	}
-	fmt.Println("started relayer")
 
 	// TODO: cleanup since this will stack multiple StopRelayer calls for
 	// multiple calls to this func, requires StopRelayer to be idempotent.

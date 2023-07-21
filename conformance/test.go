@@ -158,7 +158,6 @@ func sendIBCTransfersFromBothChainsWithTimeout(
 	dstTxs := make([]ibc.Tx, len(channels))
 
 	eg.Go(func() (err error) {
-		fmt.Println("sending IBC transfer")
 		for i, channel := range channels {
 			srcChannelID := channel.ChannelID
 			srcTxs[i], err = srcChain.SendIBCTransfer(ctx, srcChannelID, srcUser.KeyName(), testCoinSrcToDst, ibc.TransferOptions{Timeout: timeout})
@@ -169,12 +168,10 @@ func sendIBCTransfersFromBothChainsWithTimeout(
 				return err
 			}
 		}
-		fmt.Println("DONE sending IBC transfer")
 		return nil
 	})
 
 	eg.Go(func() (err error) {
-		fmt.Println("sending IBC transfer dst to src")
 		for i, channel := range channels {
 			dstChannelID := channel.Counterparty.ChannelID
 			dstTxs[i], err = dstChain.SendIBCTransfer(ctx, dstChannelID, dstUser.KeyName(), testCoinDstToSrc, ibc.TransferOptions{Timeout: timeout})
@@ -185,12 +182,9 @@ func sendIBCTransfersFromBothChainsWithTimeout(
 				return err
 			}
 		}
-		fmt.Println("DONE sending IBC transfer dst to src")
 		return nil
 	})
-	fmt.Println("WAITing on eg")
 	require.NoError(t, eg.Wait())
-	fmt.Println("validating TXs")
 	for _, srcTx := range srcTxs {
 		require.NoError(t, srcTx.Validate(), "source ibc transfer tx is invalid")
 	}
@@ -202,7 +196,6 @@ func sendIBCTransfersFromBothChainsWithTimeout(
 		Src: srcTxs,
 		Dst: dstTxs,
 	}
-	fmt.Println("done with send IBC for both chains with timeout")
 }
 
 // Test is the stable API exposed by the conformance package.
@@ -326,7 +319,6 @@ func TestChainPair(
 		preRelayerStartFuncs = append(preRelayerStartFuncs, preRelayerStartFunc)
 	}
 
-	fmt.Println("starting chain pair")
 	if relayerImpl == nil {
 		t.Logf("creating relayer: %s", rf.Name())
 		// startup both chains.
@@ -337,7 +329,6 @@ func TestChainPair(
 		relayerImpl, err = interchaintest.StartChainPair(t, ctx, rep, client, network, srcChain, dstChain, rf, preRelayerStartFuncs)
 		req.NoError(err, "failed to StartChainPair")
 	}
-	fmt.Println("started chain pair")
 
 	// execute the pre relayer start functions, then start the relayer.
 	channels, err := interchaintest.StopStartRelayerWithPreStartFuncs(
@@ -351,7 +342,6 @@ func TestChainPair(
 	)
 	req.NoError(err, "failed to StopStartRelayerWithPreStartFuncs")
 
-	fmt.Println("done stop start relayer")
 	t.Run("post_relayer_start", func(t *testing.T) {
 		for _, testCase := range testCases {
 			testCase := testCase
@@ -368,36 +358,28 @@ func TestChainPair(
 // PreRelayerStart methods for the RelayerTestCases
 
 func preRelayerStart_RelayPacket(ctx context.Context, t *testing.T, testCase *RelayerTestCase, srcChain ibc.Chain, dstChain ibc.Chain, channels []ibc.ChannelOutput) {
-	fmt.Println("send IBC Transfers From Both Chains w timeout")
 	sendIBCTransfersFromBothChainsWithTimeout(ctx, t, testCase, srcChain, dstChain, channels, nil)
-	fmt.Println("DONE - send IBC Transfers From Both Chains w timeout")
 }
 
 func preRelayerStart_NoTimeout(ctx context.Context, t *testing.T, testCase *RelayerTestCase, srcChain ibc.Chain, dstChain ibc.Chain, channels []ibc.ChannelOutput) {
-	fmt.Println("no timeout")
 	ibcTimeoutDisabled := ibc.IBCTimeout{Height: 0, NanoSeconds: 0}
 	sendIBCTransfersFromBothChainsWithTimeout(ctx, t, testCase, srcChain, dstChain, channels, &ibcTimeoutDisabled)
-	fmt.Println("DONE - no timeout")
 	// TODO should we wait here to make sure it successfully relays a packet beyond the default timeout period?
 	// would need to shorten the chain default timeouts somehow to make that a feasible test
 }
 
 func preRelayerStart_HeightTimeout(ctx context.Context, t *testing.T, testCase *RelayerTestCase, srcChain ibc.Chain, dstChain ibc.Chain, channels []ibc.ChannelOutput) {
-	fmt.Println("height timeout")
 	ibcTimeoutHeight := ibc.IBCTimeout{Height: 10}
 	sendIBCTransfersFromBothChainsWithTimeout(ctx, t, testCase, srcChain, dstChain, channels, &ibcTimeoutHeight)
 	// wait for both chains to produce 15 blocks to expire timeout
 	require.NoError(t, testutil.WaitForBlocks(ctx, 15, srcChain, dstChain), "failed to wait for blocks")
-	fmt.Println("DONE - height timeout")
 }
 
 func preRelayerStart_TimestampTimeout(ctx context.Context, t *testing.T, testCase *RelayerTestCase, srcChain ibc.Chain, dstChain ibc.Chain, channels []ibc.ChannelOutput) {
-	fmt.Println("ts timeout")
 	ibcTimeoutTimestamp := ibc.IBCTimeout{NanoSeconds: uint64((1 * time.Second).Nanoseconds())}
 	sendIBCTransfersFromBothChainsWithTimeout(ctx, t, testCase, srcChain, dstChain, channels, &ibcTimeoutTimestamp)
 	// wait for 15 seconds to expire timeout
 	time.Sleep(15 * time.Second)
-	fmt.Println("DONE - height timeout")
 }
 
 // Ensure that a queued packet is successfully relayed.

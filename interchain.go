@@ -230,7 +230,6 @@ func (ic *Interchain) Build(ctx context.Context, rep *testreporter.RelayerExecRe
 	if err := ic.cs.Initialize(ctx, opts.TestName, opts.Client, opts.NetworkID); err != nil {
 		return fmt.Errorf("failed to initialize chains: %w", err)
 	}
-	fmt.Println("initialized chainset")
 
 	err := ic.generateRelayerWallets(ctx) // Build the relayer wallet mapping.
 	if err != nil {
@@ -243,11 +242,9 @@ func (ic *Interchain) Build(ctx context.Context, rep *testreporter.RelayerExecRe
 		return err
 	}
 
-	fmt.Println("starting chainset")
 	if err := ic.cs.Start(ctx, opts.TestName, walletAmounts); err != nil {
 		return fmt.Errorf("failed to start chains: %w", err)
 	}
-	fmt.Println("track blocks")
 	if err := ic.cs.TrackBlocks(ctx, opts.TestName, opts.BlockDatabaseFile, opts.GitSha); err != nil {
 		return fmt.Errorf("failed to track blocks: %w", err)
 	}
@@ -256,7 +253,6 @@ func (ic *Interchain) Build(ctx context.Context, rep *testreporter.RelayerExecRe
 		// Error already wrapped with appropriate detail.
 		return err
 	}
-	fmt.Println("configured relayer Keys")
 	// Some tests may want to configure the relayer from a lower level,
 	// but still have wallets configured.
 	if opts.SkipPathCreation {
@@ -265,7 +261,6 @@ func (ic *Interchain) Build(ctx context.Context, rep *testreporter.RelayerExecRe
 
 	// For every relayer link, teach the relayer about the link and create the link.
 	for rp, link := range ic.links {
-		fmt.Println("linking")
 		rp := rp
 		link := link
 		c0 := link.chains[0]
@@ -278,7 +273,6 @@ func (ic *Interchain) Build(ctx context.Context, rep *testreporter.RelayerExecRe
 			)
 		}
 	}
-	fmt.Println("done linking")
 
 	// Now link the paths in parallel
 	// Creates clients, connections, and channels for each link/path.
@@ -289,7 +283,6 @@ func (ic *Interchain) Build(ctx context.Context, rep *testreporter.RelayerExecRe
 		c0 := link.chains[0]
 		c1 := link.chains[1]
 		eg.Go(func() error {
-			fmt.Println("linking paths")
 			// If the user specifies a zero value CreateClientOptions struct then we fall back to the default
 			// client options.
 			if link.createClientOpts == (ibc.CreateClientOptions{}) {
@@ -318,7 +311,6 @@ func (ic *Interchain) Build(ctx context.Context, rep *testreporter.RelayerExecRe
 					rp.Path, rp.Relayer, ic.chains[c0], ic.chains[c1], err,
 				)
 			}
-			fmt.Println("done linking paths")
 			return nil
 		})
 	}

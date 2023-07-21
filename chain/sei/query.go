@@ -16,7 +16,6 @@ func rangeBlockMessages(ctx context.Context, interfaceRegistry codectypes.Interf
 	blockRes, err := chainNode.TMClient.Block(ctx, &h)
 
 	if err != nil {
-		fmt.Println("Error executing query", err)
 		return fmt.Errorf("error querying block %w", err)
 	}
 
