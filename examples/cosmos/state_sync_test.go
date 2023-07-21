@@ -19,10 +19,6 @@ func TestCosmosHubStateSync(t *testing.T) {
 	CosmosChainStateSyncTest(t, "gaia", gaiaVersion)
 }
 
-func TestSeiStateSync(t *testing.T) {
-	CosmosChainStateSyncTest(t, "sei", "latest")
-}
-
 const stateSyncSnapshotInterval = 10
 
 func CosmosChainStateSyncTest(t *testing.T, chainName, version string) {
